@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-  Access-Control-Allow-Origin: *
   <title></title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
@@ -93,7 +92,8 @@
 <script src='js/showcase.js'></script>
 <script>
   var detailObject = {
-    config: {"apiHost":"https://my.matterport.com","pointerPreventDefault":false}
+    config: {"apiHost":"https://my.matterport.com","pointerPreventDefault":false},
+
   };
 
   // IE doesn't support the `new Event` syntax so we fallback to the old create/init style in that case
