@@ -1,41 +1,39 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
-  mode: 'development',
+  mode: "development",
   entry: {
-    app: './src/index.ts',
+    app: "./src/index.ts",
   },
-  devtool: 'source-map',
+  devtool: "source-map",
   resolve: {
-    extensions: ['.js', '.ts']
+    extensions: [".js", ".ts", ".json"],
   },
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      title: 'Development',
-      template: 'index.html',
-      inject: true
+      title: "Development",
+      template: "index.html",
+      inject: true,
     }),
-    new CopyPlugin([
-      { from: 'bundle', to: 'dist/bundle' },
-    ]),
+    new CopyPlugin([{ from: "bundle", to: "dist/bundle" }]),
   ],
   module: {
     rules: [
       {
         test: /\.ts?$/,
-        loader: 'ts-loader'
+        loader: "ts-loader",
       },
-    ]
+    ],
   },
   output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist'),
+    filename: "[name].bundle.js",
+    path: path.resolve(__dirname, "dist"),
   },
   devServer: {
-    port: 8000
-  }
+    port: 8000,
+  },
 };
