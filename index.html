@@ -8,16 +8,63 @@
     <link rel="icon"
           type="image/png"
           href="/BMcD/favicon.png" />
- </head>
+
+    <style>
+        div {
+            animation: fadeOutAnimations;
+            animation-duration: 3s;
+            animation-iteration-count: 1;
+            animation-fill-mode: forwards;
+        }
+        iframe {
+            animation: fadeInAnimation;
+            animation-duration: 3s;
+            animation-iteration-count: 1;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadeInAnimation {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOutAnimations {
+            100% {
+                opacity: 0;
+            }
+            0% {
+                opacity: 1;
+            }
+        }
+
+        div.fadeMe {
+            opacity:    1;
+            background: #FFFFFF;
+            width:      100%;
+            height:     100%;
+            z-index:    -1;
+            top:        0;
+            left:       0;
+            position:   fixed;
+        }
+
+    </style>
+
+</head>
 <body>
 
-<h1 style = "text-align: center;
-    font-family: 'Century Gothic';
-    color:midnightblue">
-    Sandbox
+<div class">
+<h1 style = "font-family: 'Century Gothic';
+    text-align: center;
+    color:royalblue";
+    >
   </h1>
-
-  <p style = "text-align: center">
+</div>
+  <p style = "text-align: center;">
 
     <iframe id="showcase"
           src="./bundle/showcase.html?m=9baZ3r1v4dd&play=1&qs=1&log=0"
@@ -31,7 +78,7 @@
 <p id = "demo"
    style = "text-align: center;
    font-family: 'Century Gothic';
-   color:midnightblue";
+   color:royalblue";
    >
 </p>
 
