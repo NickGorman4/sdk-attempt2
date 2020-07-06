@@ -2,7 +2,10 @@
   "name": "showcase-sdk-tutorial",
   "version": "1.0.0",
   "main": "index.ts",
-  "repository": "git@github.com:gbruce/showcase-sdk-tutorial.git",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/gbruce/showcase-sdk-tutorial.git"
+  },
   "author": "Guillermo Bruce <guillermo@matterport.com>",
   "license": "MIT",
   "scripts": {
@@ -20,6 +23,14 @@
     "webpack-dev-server": "^3.10.0"
   },
   "dependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "webcam-easy": "^1.0.5"
-  }
+  },
+  "description": "",
+  "bugs": {
+    "url": "https://github.com/gbruce/showcase-sdk-tutorial/issues"
+  },
+  "homepage": "https://github.com/gbruce/showcase-sdk-tutorial#readme",
+  "keywords": []
 }
