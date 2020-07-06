@@ -1,6 +1,4 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import "./index.css";
+console.log("RUNNING RIGHT NOW");
 
 const showcase = document.getElementById("showcase") as HTMLIFrameElement;
 const key = "96296aaaf1964968ad92128f7469bd99";
