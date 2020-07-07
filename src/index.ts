@@ -238,14 +238,14 @@ showcase.addEventListener("load", async function () {
   const bull = here.addComponent("testy");
 
   here.obj3D.position.set(-5, 0.25, 5.5);
-  here.start();
+  //here.start();
 
   // Store the fbx component since we will need to adjust it in the next step.
   //Object is stored inside of the project
   //The url could be some internet address where it is stored
   //this leads to a potted plant
   const fbxComponent = modelNode.addComponent(sdk.Scene.Component.FBX_LOADER, {
-    url: "./fbx/01Alocasia_fbx/01Alocasia_fbx.FBX",
+    url: "./fbx/TestRack/Rack1.fbx",
   });
   const fella = littleGuy.addComponent(sdk.Scene.Component.FBX_LOADER, {
     url: "./fbx/Nokia/Nokia.fbx",
@@ -259,9 +259,9 @@ showcase.addEventListener("load", async function () {
 
   //Adjsut the scale of the plant. I do not know any better way than tuning right now
   fbxComponent.inputs.localScale = {
-    x: 0.0009 / 1.5,
-    y: 0.0009 / 1.5,
-    z: 0.0009 / 1.5,
+    x: 0.022,
+    y: 0.022,
+    z: 0.022,
   };
 
   fella.inputs.localScale = {
@@ -274,6 +274,30 @@ showcase.addEventListener("load", async function () {
     x: 0.01,
     y: 0.01,
     z: 0.01,
+  };
+
+  fella.onEvent = function (eventType: string) {
+    //drag events (ha)
+    if (eventType == "INTERACTION.DRAG") {
+      //console.log(cartesian);
+      if (eventType == "INTERACTION.DRAG") {
+        var cartesian = getCursorPosition();
+        //console.log(cartesian);
+        littleGuy.obj3D.position.set(cartesian[0], 0.75, cartesian[2]);
+      }
+    }
+  };
+
+  fanster.onEvent = function (eventType: string) {
+    //drag events (ha)
+    if (eventType == "INTERACTION.DRAG") {
+      //console.log(cartesian);
+      if (eventType == "INTERACTION.DRAG") {
+        var cartesian = getCursorPosition();
+        //console.log(cartesian);
+        fan.obj3D.position.set(cartesian[0], 3, cartesian[2]);
+      }
+    }
   };
 
   fbxComponent.onEvent = function (eventType: string) {
@@ -294,33 +318,38 @@ showcase.addEventListener("load", async function () {
 
     //hover events
     if (eventType == "INTERACTION.HOVER" && hoverCountPlant % 2 == 0) {
-      console.log("yerp");
+      /* console.log("yerp");
       fbxComponent.inputs.localScale = {
-        x: 0.0009 * 1.1,
-        y: 0.0009 * 1.1,
-        z: 0.0009 * 1.1,
-      };
+        x: 0.022 * 1.1,
+        y: 0.022 * 1.1,
+        z: 0.022 * 1.1,
+      };*/
       hoverCountPlant++;
     } else if (eventType == "INTERACTION.HOVER" && hoverCountPlant % 2 != 0) {
       //this.material.color = new THREE.Color("royalblue");
-      console.log("yerp1");
+      /* console.log("yerp1");
       fbxComponent.inputs.localScale = {
-        x: 0.0009 / 1.5,
-        y: 0.0009 / 1.5,
-        z: 0.0009 / 1.5,
-      };
+        x: 0.022 / 1.1,
+        y: 0.022 / 1.1,
+        z: 0.022 / 1.1,
+      };*/
       hoverCountPlant++;
     }
 
     //drag events (ha)
     if (eventType == "INTERACTION.DRAG") {
       //console.log(cartesian);
-      modelNode.obj3D.rotation.y += 0.05;
+      if (eventType == "INTERACTION.DRAG") {
+        var cartesian = getCursorPosition();
+        //console.log(cartesian);
+        modelNode.obj3D.position.set(cartesian[0], 0, cartesian[2]);
+      }
     }
   };
 
   //Location of the plant. X is "left and right", Y is "up and down", Z is "Forward and back"
   // Relative to "spawn" location of the viewer. If you move those relations will not hold
+  littleGuy.obj3D.position.set(-1.135, 0.763, 0.777);
   modelNode.obj3D.position.set(-7, 0, 7);
   fan.obj3D.position.set(-7, 3, -0.25);
   littleGuy.obj3D.rotation.y = (180 * Math.PI) / 180;
@@ -387,13 +416,14 @@ showcase.addEventListener("load", async function () {
   fbxComponent.events["INTERACTION.HOVER"] = true;
   fbxComponent.events["INTERACTION.DRAG"] = true;
 
+  fanster.events["INTERACTION.HOVER"] = true;
+  fanster.events["INTERACTION.DRAG"] = true;
+
+  fella.events["INTERACTION.HOVER"] = true;
+  fella.events["INTERACTION.DRAG"] = true;
+
   const tick = function () {
     requestAnimationFrame(tick);
-    littleGuy.obj3D.position.set(
-      -6,
-      0.75,
-      2.3 * 1.2 - (Math.cos(rot / 2) * 3.14) / 26
-    );
     fan.obj3D.rotation.y = rot;
     rot = rot + 0.02;
   };
