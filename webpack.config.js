@@ -19,13 +19,19 @@ module.exports = {
       template: "index.html",
       inject: true,
     }),
-    new CopyPlugin([{ from: "bundle", to: "dist/bundle" }]),
+    new CopyPlugin([{ from: "bundle", to: "bundle" }]),
   ],
   module: {
     rules: [
       {
         test: /\.ts?$/,
         loader: "ts-loader",
+      },
+      {
+        test: /\.(png|svg|jpg|gif)$/,
+        use: [
+            'file-loader',
+        ],
       },
     ],
   },

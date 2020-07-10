@@ -87,8 +87,8 @@ showcase.addEventListener("load", async function () {
   comp1.onInputsUpdated();
 
   console.log(
-    "%c  " + comp1.outputs.sum + "  ",
-    "background: #333333; color: #00dd00"
+      "%c  " + comp1.outputs.sum + "  ",
+      "background: #333333; color: #00dd00"
   );
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -143,11 +143,22 @@ showcase.addEventListener("load", async function () {
   var hoverCount = 0;
   var hoverCountPlant = 0;
 
+
   function Renderable() {
+    this.inputs = {
+      visible: false,
+      color: "red",
+    };
+
+    this.update = function () {
+      const THREE = this.context.three;
+      this.material.color = new THREE.Color(this.inputs.color);
+    }
+
     this.onInit = function () {
       const THREE = this.context.three;
       //this.material = new THREE.MeshPhongMaterial();
-      var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+      var geometry = new THREE.BoxGeometry(1, 0.5, 0.5);
 
       /*
       var texture = new THREE.TextureLoader().load(
@@ -156,7 +167,7 @@ showcase.addEventListener("load", async function () {
 */
 
       this.material = new THREE.MeshLambertMaterial();
-      this.material.color = new THREE.Color("royalblue");
+      this.material.color = new THREE.Color(this.inputs.color);
 
       var mesh = new THREE.Mesh(geometry, this.material);
       this.outputs.objectRoot = mesh;
@@ -188,6 +199,8 @@ showcase.addEventListener("load", async function () {
       const THREE = this.context.three;
 
       //click events
+
+
       /*if ((this.eventType = "INTERACTION.CLICK" && clickCount % 2 == 0)) {
         clickCount++;
         console.log("Clickable component was clicked!" + clickCount);
@@ -202,21 +215,27 @@ showcase.addEventListener("load", async function () {
 
       //hover events
       if (eventType == "INTERACTION.HOVER" && hoverCount % 2 == 0) {
-        this.material.color = new THREE.Color("midnightblue");
+        this.material.color = new THREE.Color(this.inputs.color);
         hoverCount++;
       } else if (eventType == "INTERACTION.HOVER" && hoverCount % 2 != 0) {
-        this.material.color = new THREE.Color("royalblue");
+        this.inputs.color = "royalblue"
+        this.material.color = new THREE.Color(this.inputs.color);
         hoverCount++;
       }
 
       //drag events (ha)
       if (eventType == "INTERACTION.DRAG") {
+        //changeColor();
         var cartesian = getCursorPosition();
         //console.log(cartesian);
         here.obj3D.position.set(cartesian[0], 0.25, cartesian[2]);
       }
     };
+
+    this.onTick = function (tickDelta) {};
+
   }
+
 
   function rendyFactor() {
     return new Renderable();
@@ -231,6 +250,12 @@ showcase.addEventListener("load", async function () {
   const modelNode = await sdk.Scene.createNode();
   const littleGuy = await sdk.Scene.createNode();
   const fan = await sdk.Scene.createNode();
+  const wall = await sdk.Scene.createNode();
+  const voltageNode = await sdk.Scene.createNode();
+  const cboNode = await sdk.Scene.createNode();
+
+
+
   // const test = await sdk.Scene.createNode();
 
   const here = await sdk.Scene.createNode();
@@ -238,26 +263,44 @@ showcase.addEventListener("load", async function () {
   const bull = here.addComponent("testy");
 
   here.obj3D.position.set(-5, 0.25, 5.5);
-  //here.start();
+  here.start();
 
   // Store the fbx component since we will need to adjust it in the next step.
   //Object is stored inside of the project
   //The url could be some internet address where it is stored
   //this leads to a potted plant
   const fbxComponent = modelNode.addComponent(sdk.Scene.Component.FBX_LOADER, {
-    url: "./fbx/TestRack/Rack1.fbx",
+    url: "./fbx/Telecom/Telecom.fbx",
   });
   const fella = littleGuy.addComponent(sdk.Scene.Component.FBX_LOADER, {
     url: "./fbx/Nokia/Nokia.fbx",
   });
 
   const fanster = fan.addComponent(sdk.Scene.Component.FBX_LOADER, {
-    url: "./fbx/fan/fan.fbx",
+    url: "./fbx/Sageon/Sageon.fbx",
+  });
+  const powerWall = wall.addComponent(sdk.Scene.Component.FBX_LOADER, {
+    url: "./fbx/Wall/Wall.fbx",
+  });
+
+  const voltage = voltageNode.addComponent(sdk.Scene.Component.FBX_LOADER, {
+    url: "./fbx/randy/voltage.fbx",
+  });
+
+  const cbo = cboNode.addComponent(sdk.Scene.Component.FBX_LOADER, {
+    url: "./fbx/randy/CB04PT25.fbx",
   });
 
   //const testtest = test.addComponent("box");
 
   //Adjsut the scale of the plant. I do not know any better way than tuning right now
+
+  powerWall.inputs.localScale = {
+    x: 1,
+    y: 1,
+    z: 1,
+  };
+
   fbxComponent.inputs.localScale = {
     x: 0.022,
     y: 0.022,
@@ -271,9 +314,21 @@ showcase.addEventListener("load", async function () {
   };
 
   fanster.inputs.localScale = {
-    x: 0.01,
-    y: 0.01,
-    z: 0.01,
+    x: 0.001,
+    y: 0.001,
+    z: 0.001,
+  };
+
+  powerWall.onEvent = function (eventType: string) {
+    //drag events (ha)
+    if (eventType == "INTERACTION.DRAG") {
+      //console.log(cartesian);
+      if (eventType == "INTERACTION.DRAG") {
+        var cartesian = getCursorPosition();
+        //console.log(cartesian);
+        wall.obj3D.position.set(cartesian[0], 0, 5.2);
+      }
+    }
   };
 
   fella.onEvent = function (eventType: string) {
@@ -295,7 +350,7 @@ showcase.addEventListener("load", async function () {
       if (eventType == "INTERACTION.DRAG") {
         var cartesian = getCursorPosition();
         //console.log(cartesian);
-        fan.obj3D.position.set(cartesian[0], 3, cartesian[2]);
+        fan.obj3D.position.set(-10.6, 0, cartesian[2]);
       }
     }
   };
@@ -351,33 +406,48 @@ showcase.addEventListener("load", async function () {
   // Relative to "spawn" location of the viewer. If you move those relations will not hold
   littleGuy.obj3D.position.set(-1.135, 0.763, 0.777);
   modelNode.obj3D.position.set(-7, 0, 7);
-  fan.obj3D.position.set(-7, 3, -0.25);
+  modelNode.obj3D.rotation.y = (90 * Math.PI) / 180;
+  wall.obj3D.position.set(-2.559, 0, 5.2);
+  fan.obj3D.position.set(-10.6, 0, 4.097);
+  fan.obj3D.rotation.y = (90 * Math.PI) / 180;
   littleGuy.obj3D.rotation.y = (180 * Math.PI) / 180;
+  voltageNode.obj3D.position.set(-2.559, 0, 5.2)
+  cboNode.obj3D.position.set(-3, 0, 5.2)
   //test.obj3D.position.set(-6.5, 0.5, 1.21);
 
   sdk.Pointer.intersection.subscribe(function (intersectionData) {
     // Changes to the intersection data have occurred.
     document.getElementById("demo").innerHTML =
-      "X position : " +
-      Number.parseFloat(intersectionData.position.x).toFixed(3) +
-      " m" +
-      "<br/>" +
-      "Y position : " +
-      Number.parseFloat(intersectionData.position.y).toFixed(3) +
-      " m" +
-      "<br/>" +
-      "Z position : " +
-      Number.parseFloat(intersectionData.position.z).toFixed(3) +
-      " m";
+        "X position : " +
+        Number.parseFloat(intersectionData.position.x).toFixed(3) +
+        " m" +
+        "<br/>" +
+        "Y position : " +
+        Number.parseFloat(intersectionData.position.y).toFixed(3) +
+        " m" +
+        "<br/>" +
+        "Z position : " +
+        Number.parseFloat(intersectionData.position.z).toFixed(3) +
+        " m";
   });
+
+
+  document.getElementById("clickMe").onclick = function changeColor() {
+    console.log("color change")
+    bull.inputs.color = "green";
+  }
+
 
   //Rot is for the ultra-impressive cosine rotation
   //the .start() is what will actually add the object inside the node to scene
 
-  var rot = 0;
+  //  var rot = 0;
   modelNode.start();
   littleGuy.start();
   fan.start();
+  wall.start();
+  voltageNode.start();
+  cboNode.start();
   //test.start();
 
   /* sdk.Mattertag.add([{
@@ -422,10 +492,22 @@ showcase.addEventListener("load", async function () {
   fella.events["INTERACTION.HOVER"] = true;
   fella.events["INTERACTION.DRAG"] = true;
 
+  powerWall.events["INTERACTION.HOVER"] = true;
+  powerWall.events["INTERACTION.DRAG"] = true;
+
+  voltage.events["INTERACTION.HOVER"] = true;
+  voltage.events["INTERACTION.DRAG"] = true;
+
+
+  cbo.events["INTERACTION.HOVER"] = true;
+  cbo.events["INTERACTION.DRAG"] = true;
+
+
   const tick = function () {
     requestAnimationFrame(tick);
-    fan.obj3D.rotation.y = rot;
-    rot = rot + 0.02;
+    //fan.obj3D.rotation.y = rot;
+    // rot = rot + 0.02
+  bull.update();
   };
   tick();
 });

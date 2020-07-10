@@ -1,0 +1,129 @@
+<head>
+    <title>BMcD 3D Sandbox</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon"
+          type="image/png"
+          href="/BMcD/favicon.png" />
+
+    <style>
+/*        div {
+            animation: fadeOutAnimations;
+            animation-duration: 3s;
+            animation-iteration-count: 1;
+            animation-fill-mode: forwards;
+        }
+        iframe {
+            animation: fadeInAnimation;
+            animation-duration: 3s;
+            animation-iteration-count: 1;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadeInAnimation {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOutAnimations {
+            100% {
+                opacity: 0;
+            }
+            0% {
+                opacity: 1;
+            }
+        }
+
+        div.fadeMe {
+            opacity:    1;
+            background: #FFFFFF;
+            width:      100%;
+            height:     100%;
+            z-index:    -1;
+            top:        0;
+            left:       0;
+            position:   fixed;
+        }*/
+        /* header styles Aaron Jones added */
+
+        .main-wrap {
+          position: relative;
+          width: 100%;
+          height: 100%;
+
+        }
+        .branded-navigation-bar-wrap {
+          position: absolute;
+          top:0px;
+          left:0px;
+          height: 100px;
+          width:100%;
+          background-color: #000000;
+            z-index:10
+
+        }
+        .logo-burns {
+          max-width: 320px;
+          position: absolute;
+          top:50%;
+          left:2em;
+          transform: translateY(-50%)
+
+        }
+        body {margin:0px}
+        #showcase {
+
+          position:relative;
+          z-index:5
+        }
+    </style>
+
+</head>
+<body>
+<section class="main-wrap">
+  <section class="branded-navigation-bar-wrap">
+    <a target="_blank" href="https:www.burnsmcd.com">
+      <img src="https://info.burnsmcd.com/hs-fs/hubfs/Burnsmcd_Dec2015_/Logo.png" class="logo-burns"/>
+    </a>
+    </section>
+<div class">
+<h1 style = "font-family: 'Century Gothic';
+    text-align: center;
+    color:royalblue";
+    >
+  </h1>
+</div>
+  <p style = "text-align: center;">
+
+    <iframe id="showcase"
+          src="./bundle/showcase.html?m=9baZ3r1v4dd&play=1&qs=1&log=0"
+          width="100%"
+          height="100%"
+          frameborder=”0”
+          allowfullscreen>
+    </iframe>
+
+  </p>
+<p id = "demo"
+   style = "text-align: center;
+   font-family: 'Century Gothic';
+   color:royalblue";
+   >
+
+    <div>
+        <button id="clickMe">Green</button>
+    </div>
+</p>
+    <p>
+
+    </p>
+</section>
+
+<script type="text/javascript" src="app.bundle.js"></script></body>
