@@ -64,7 +64,7 @@ showcase.addEventListener("load", async function () {
     };
   }
 
-  //This is the function that returns the new component. Necessary for adding it
+  //This is the function that returns the new component. Necessary for adding the component
   function SumFactory() {
     return new Sum();
   }
@@ -157,10 +157,7 @@ showcase.addEventListener("load", async function () {
     this.onInit = function () {
       //gotta do this context business , not sure how it works, but it allows for the use of the underlying three.js
       const THREE = this.context.three;
-
-
       var geometry = new THREE.BoxGeometry(.5, .5, .5);
-
 
       //This is how to wrap an object with a texture/photo.
       //First load the texture
@@ -205,6 +202,7 @@ showcase.addEventListener("load", async function () {
 
     //////////////////////////////////////////////////////////////////////////
     //Events are yuge
+    //The events are defined in the component
     this.onEvent = function (eventType: string) {
       //If you plan to change shape with events, gotta get the context first
       //const THREE = this.context.three;
@@ -270,6 +268,7 @@ showcase.addEventListener("load", async function () {
   function renderableFactory(){
     return new Renderable();
   };
+
   sdk.Scene.register("testy", renderableFactory);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
