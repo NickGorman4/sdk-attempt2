@@ -10,6 +10,21 @@
           href="/BMcD/favicon.png" />
 
     <style>
+        button{
+            background-color: #000000;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 11px;
+        }
+
+
+        iframe {
+            z-index:-1;
+        }
 /*        div {
             animation: fadeOutAnimations;
             animation-duration: 3s;
@@ -105,10 +120,25 @@
     <iframe id="showcase"
           src="./bundle/showcase.html?m=9baZ3r1v4dd&play=1&qs=1&log=0"
           width="100%"
-          height="100%"
+          height="95%"
           frameborder=”0”
+            position = "relative"
+            z-index = -1
           allowfullscreen>
     </iframe>
+      <button id = "clickMe6">New Rack</button>
+      <button id = "clickMe7">Delete Rack</button>
+      <button id = "clickMe8">Rotate Selected</button>
+      <button id = "clickMe9">Move Spawner Home</button>
+      <button id = "clickMe10">
+          Save Scene
+      </button>
+          <input type = "file" id = "clickMe11">
+
+
+    <script>
+
+    </script>
 
   </p>
 <p id = "demo"
@@ -117,9 +147,15 @@
    color:royalblue";
    >
 
-    <div>
-        <button id="clickMe">Green</button>
-    </div>
+
+    <div style = "text-align: center;">
+ <!--   <button id="clickMe4">New Box</button>
+    <button id="clickMe5">Delete Selected Box</button>
+    <button id="clickMe2">Appear</button>
+    <button id="clickMe">Green</button>
+    <button id="clickMe3">Disappear</button>-->
+</div>
+
 </p>
     <p>
 

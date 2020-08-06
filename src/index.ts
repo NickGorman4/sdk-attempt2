@@ -1,7 +1,16 @@
-console.log("RUNNING RIGHT NOW");
+//////////////////////////////////////////////////////////
+//This begins the section that sets up the sdk
 
+//This is for saving the Scene.jsonn files
+var FileSaver = require('file-saver');
+
+
+//This graps the iframe with id "showcase"
 const showcase = document.getElementById("showcase") as HTMLIFrameElement;
 const key = "96296aaaf1964968ad92128f7469bd99";
+
+
+
 
 // declare this file is a module
 export {};
@@ -12,7 +21,7 @@ declare global {
     MP_SDK: any;
   }
 }
-
+//Still not sure what this event listener business is, but here is where all the coding starts
 showcase.addEventListener("load", async function () {
   let sdk;
   try {
@@ -26,6 +35,8 @@ showcase.addEventListener("load", async function () {
   console.log(sdk);
 
   //This allows for what we add to actually be seen
+  //You can screw with the lights for a different effect.
+  //I thought maybe this could be used to display different modes, i.e. editing mode vs showing-off mode
   const lights = await sdk.Scene.createNode();
   lights.addComponent("mp.lights");
   lights.start();
@@ -36,11 +47,13 @@ showcase.addEventListener("load", async function () {
 
   //Define the component. I am not sure why it must be in the form of a function instead of a class
   function Sum() {
+    //Inputs are mutable
     this.inputs = {
       augend: 0,
       addend: 0,
     };
 
+    //Outputs should not be mutable
     this.outputs = {
       sum: 0,
     };
@@ -57,16 +70,17 @@ showcase.addEventListener("load", async function () {
   }
 
   //Quick display of the general structure and use of the sum component
-  var sum1 = SumFactory();
-  sum1.inputs.augend = 1;
-  sum1.inputs.addend = 99;
-  sum1.onInputsUpdated();
-  console.log(sum1.outputs.sum);
+  //This is setting up an instance of the component
+  var sum = SumFactory();
+  sum.inputs.augend = 1;
+  sum.inputs.addend = 99;
+  sum.onInputsUpdated();
+  console.log(sum.outputs.sum);
 
   //This is how you register the component to add it later
   sdk.Scene.register("sum", SumFactory);
 
-  //This is how you add the component. Create a node and then add components. The components need to be in the same node
+  //This is how you add the component. Create a node and then add components. The components to be bound need to be in the same node (I think)
   var node = await sdk.Scene.createNode();
   var comp1 = node.addComponent("sum");
   var comp2 = node.addComponent("sum");
@@ -81,7 +95,7 @@ showcase.addEventListener("load", async function () {
   comp2.inputs.augend = 5;
   comp3.inputs.addend = 6;
 
-  //This is necessary and the order is important. The highest component in the architecture needs to be called alst.
+  //This is necessary and the order is important. The highest component in the architecture needs to be called last.
   comp2.onInputsUpdated();
   comp3.onInputsUpdated();
   comp1.onInputsUpdated();
@@ -90,130 +104,138 @@ showcase.addEventListener("load", async function () {
       "%c  " + comp1.outputs.sum + "  ",
       "background: #333333; color: #00dd00"
   );
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //This function is to move stuff around. It returns the cursor position to be assigned to an object position
 
   function getCursorPosition() {
     var cartesian = [];
+
+    //Not sure what this does
     sdk.Pointer.intersection.subscribe(function (intersectionData) {
       cartesian = [
+          //This is the actual cartesian location. I believe this relies on raycasting from the three.js underneath
         intersectionData.position.x,
         intersectionData.position.y,
         intersectionData.position.z,
+
+         //This is the normal vector to determine where on the object the user has clicked
+        intersectionData.normal.x,
+        intersectionData.normal.y,
+        intersectionData.normal.z,
+
       ];
+      //console.log(cartesian)
     });
+
     return cartesian;
   }
-
-  function Box() {
-    this.inputs = {
-      visible: true,
-    };
-
-    this.onInit = function () {
-      var THREE = this.context.three;
-      var geometry = new THREE.BoxGeometry(1, 1, 1);
-      this.material = new THREE.MeshPhongMaterial();
-      this.material.color = new THREE.Color("skyblue");
-      var mesh = new THREE.Mesh(geometry, this.material);
-      this.outputs.objectRoot = mesh;
-      this.outputs.collider = mesh;
-    };
-
-    this.onEvent = function (type, data) {
-      /*      var THREE = this.context.three;
-      if (this.type === this.ComponentInteractionType.HOVER) {
-        this.material.color = new THREE.Color("red");
-      }*/
-    };
-
-    this.onInputsUpdated = function (previous) {};
-
-    this.onTick = function (tickDelta) {};
-
-    this.onDestroy = function () {
-      this.material.dispose();
-    };
-  }
-
-  function BoxFactory() {
-    return new Box();
-  }
-
-  //var clickCount = 0;
-  var hoverCount = 0;
-  var hoverCountPlant = 0;
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //This is an example of defining a class for a three.js primitive that will actually appear. It could be a cylinder, sphere, cube, text, etc.
 
   function Renderable() {
+//Mutable inputs
     this.inputs = {
+      name: null,
       visible: false,
-      color: "red",
+      color: "yellow",
+      opacity: 1,
     };
 
+//This is basically an "onInputsUpdatedFunction". I used to change the color, so I called it every animation frame. I would not
+//be surprised to hear there is a more efficient way than constantly calling it
+//I set it up so a button will change one of the inputs and this function will implement the change
     this.update = function () {
       const THREE = this.context.three;
       this.material.color = new THREE.Color(this.inputs.color);
+      this.material.opacity = this.inputs.opacity;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //This is the function that creates the geometry
     this.onInit = function () {
+      //gotta do this context business , not sure how it works, but it allows for the use of the underlying three.js
       const THREE = this.context.three;
-      //this.material = new THREE.MeshPhongMaterial();
-      var geometry = new THREE.BoxGeometry(1, 0.5, 0.5);
+
+
+      var geometry = new THREE.BoxGeometry(.5, .5, .5);
+
+
+      //This is how to wrap an object with a texture/photo.
+      //First load the texture
+
 
       /*
       var texture = new THREE.TextureLoader().load(
         "../BMcD/perspective-logo-large.png"
       );
-*/
+      */
 
+      //Then map this texture to the material
+      //this.material = new THREE.MeshLambertMaterial({map: texture});
+
+      //Viola
+
+
+
+      //Check out the three.js documentation to mess with the material. (https://threejs.org/)
+      //It will change how the light reflects off the object. Perhaps another way to display modes?
+      //this.material = new THREE.MeshPhongMaterial();
+
+      //Regular ole textureless cube, with a nice color
       this.material = new THREE.MeshLambertMaterial();
       this.material.color = new THREE.Color(this.inputs.color);
 
+      //Transparency must be true to change the opacity
+      this.material.transparent = true;
+
+      //Now you can make stuff translucent. Also a good way to display different modes/situation
+      //I wanted to find a way to make the entire scene translucent to see overlap between objects n whatnot
+      this.material.opacity = this.inputs.opacity;
+
+      //Make the shape real, create the mesh
       var mesh = new THREE.Mesh(geometry, this.material);
+
+      //This allows the object to distort the cursor so to be clickable
       this.outputs.objectRoot = mesh;
       this.outputs.collider = mesh;
 
-      /*      var loader = new THREE.FontLoader();
-
-      loader.load("../bundle/fonts/mp-font.eot", function (font) {
-        var geometry = new THREE.TextGeometry("Hello three.js!", {
-          font: font,
-          size: 80,
-          height: 5,
-          curveSegments: 12,
-          bevelEnabled: true,
-          bevelThickness: 10,
-          bevelSize: 8,
-          bevelOffset: 0,
-          bevelSegments: 5,
-        });
-
-        this.material = new THREE.MeshLambertMaterial();
-        var mesh = new THREE.Mesh(geometry, this.material);
-        this.outputs.objectRoot = mesh;
-        this.outputs.collider = mesh;
-      });*/
     };
+
+    //////////////////////////////////////////////////////////////////////////
+    //Events are yuge
     this.onEvent = function (eventType: string) {
-      // console.log(eventType + " count: " + hoverCount);
-      const THREE = this.context.three;
+      //If you plan to change shape with events, gotta get the context first
+      //const THREE = this.context.three;
 
-      //click events
 
+      //I updated the sdk on August 3rd and now there are ton of events of which I am uncertain on how to use
+      //The general structure I used is:
+
+      //if(eventType == ""INTERACTION.WHATEVER")
+      //{
+      //do some stuff
+      //}
+
+
+      //Click events
+      //I used variable like {eventType}Count to determine to have select and deselect functionality
+      //I just used modulo clickCount to determine if it's odd or even
 
       /*if ((this.eventType = "INTERACTION.CLICK" && clickCount % 2 == 0)) {
         clickCount++;
-        console.log("Clickable component was clicked!" + clickCount);
         this.material.color = new THREE.Color("royalblue");
       } else if (
         (this.eventType = "INTERACTION.CLICK" && clickCount % 2 != 0)
       ) {
         clickCount++;
-        console.log("Clickable component was clicked!" + clickCount);
         this.material.color = new THREE.Color("white");
       }*/
 
       //hover events
+      //Basically the same things as the click deal. For hover events, the event fires when you hover and unhover
+      /*
       if (eventType == "INTERACTION.HOVER" && hoverCount % 2 == 0) {
         this.material.color = new THREE.Color(this.inputs.color);
         hoverCount++;
@@ -222,13 +244,65 @@ showcase.addEventListener("load", async function () {
         this.material.color = new THREE.Color(this.inputs.color);
         hoverCount++;
       }
+       */
+
+
+      //drag events
+      //Drag events are fired every animation frame, so it will not work to do a while. This if statement will be called
+      //every frame
+      if (eventType == "INTERACTION.DRAG") {
+
+        //var cartesian = getCursorPosition();
+
+        //I sort of cheated and went straight to the node that I had already created to change the location. I think it would be better to
+        //add another input to this component definition and then use that to change the location in the node
+
+        //here.obj3D.position.set(cartesian[0], 0.5, cartesian[2]);
+      }
+    };
+
+    //Matterport does this in all their examples. I think it would be good to put the update function calls in hear, and then just call onTick
+    this.onTick = function (tickDelta) {};
+
+  }
+
+//Now make the factory function and register the component with the sdk
+  function renderableFactory(){
+    return new Renderable();
+  };
+  sdk.Scene.register("testy", renderableFactory);
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*  function Rack() {
+    this.inputs = {
+      name: null,
+      visible: false,
+      color: "yellow",
+      opacity: 1,
+    };
+
+    this.update = function () {
+      const THREE = this.context.three;
+      this.material.color = new THREE.Color(this.inputs.color);
+      this.material.opacity = this.inputs.opacity;
+    }
+
+    this.onInit = function () {
+
+    };
+    this.onEvent = function (eventType: string) {
+
+      if (eventType == "INTERACTION.HOVER" && hoverCount % 2 == 0) {
+        hoverCount++;
+      } else if (eventType == "INTERACTION.HOVER" && hoverCount % 2 != 0) {
+        hoverCount++;
+      }
 
       //drag events (ha)
       if (eventType == "INTERACTION.DRAG") {
-        //changeColor();
         var cartesian = getCursorPosition();
-        //console.log(cartesian);
-        here.obj3D.position.set(cartesian[0], 0.25, cartesian[2]);
+        here.obj3D.position.set(cartesian[0], 0.5, cartesian[2]);
       }
     };
 
@@ -237,277 +311,256 @@ showcase.addEventListener("load", async function () {
   }
 
 
-  function rendyFactor() {
-    return new Renderable();
+  function rackFactory() {
+    return new Rack();
   }
-  sdk.Scene.register("testy", rendyFactor);
-
-  // Registering the component with the sdk
-  sdk.Scene.register("box", BoxFactory);
-
-  //Necessary for adding objects. This is what will actually
-  //put our 3D object into our space
-  const modelNode = await sdk.Scene.createNode();
-  const littleGuy = await sdk.Scene.createNode();
-  const fan = await sdk.Scene.createNode();
-  const wall = await sdk.Scene.createNode();
-  const voltageNode = await sdk.Scene.createNode();
-  const cboNode = await sdk.Scene.createNode();
+  sdk.Scene.register("testy", rackFactor);*/
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // const test = await sdk.Scene.createNode();
 
-  const here = await sdk.Scene.createNode();
+////////////////////////////////////////////////////////////////////////////////////
+  //this spawner will be where new stuff will be spawned. This is a three.js primitives
 
-  const bull = here.addComponent("testy");
+  var spawnerPosition = [-5, 0.1, 5.5];
 
-  here.obj3D.position.set(-5, 0.25, 5.5);
-  here.start();
+  function Spawner() {
+    this.inputs = {
+      name: null,
+      visible: false,
+      color: "white",
+      opacity: 1,
+    };
 
-  // Store the fbx component since we will need to adjust it in the next step.
-  //Object is stored inside of the project
-  //The url could be some internet address where it is stored
-  //this leads to a potted plant
-  const fbxComponent = modelNode.addComponent(sdk.Scene.Component.FBX_LOADER, {
-    url: "./fbx/Telecom/Telecom.fbx",
-  });
-  const fella = littleGuy.addComponent(sdk.Scene.Component.FBX_LOADER, {
-    url: "./fbx/Nokia/Nokia.fbx",
-  });
+    this.update = function () {
+      const THREE = this.context.three;
+      this.material.color = new THREE.Color(this.inputs.color);
+      this.material.opacity = this.inputs.opacity;
+    }
 
-  const fanster = fan.addComponent(sdk.Scene.Component.FBX_LOADER, {
-    url: "./fbx/Sageon/Sageon.fbx",
-  });
-  const powerWall = wall.addComponent(sdk.Scene.Component.FBX_LOADER, {
-    url: "./fbx/Wall/Wall.fbx",
-  });
+    this.onInit = function () {
+      const THREE = this.context.three;
+      var geometry = new THREE.CylinderGeometry(.5, .5, .01, 50);
 
-  const voltage = voltageNode.addComponent(sdk.Scene.Component.FBX_LOADER, {
-    url: "./fbx/randy/voltage.fbx",
-  });
+      this.material = new THREE.MeshLambertMaterial();
+      this.material.color = new THREE.Color(this.inputs.color);
+      this.material.transparent = true;
+      this.material.opacity = this.inputs.opacity;
 
-  const cbo = cboNode.addComponent(sdk.Scene.Component.FBX_LOADER, {
-    url: "./fbx/randy/CB04PT25.fbx",
-  });
-
-  //const testtest = test.addComponent("box");
-
-  //Adjsut the scale of the plant. I do not know any better way than tuning right now
-
-  powerWall.inputs.localScale = {
-    x: 1,
-    y: 1,
-    z: 1,
-  };
-
-  fbxComponent.inputs.localScale = {
-    x: 0.022,
-    y: 0.022,
-    z: 0.022,
-  };
-
-  fella.inputs.localScale = {
-    x: 0.02,
-    y: 0.02,
-    z: 0.02,
-  };
-
-  fanster.inputs.localScale = {
-    x: 0.001,
-    y: 0.001,
-    z: 0.001,
-  };
-
-  powerWall.onEvent = function (eventType: string) {
-    //drag events (ha)
-    if (eventType == "INTERACTION.DRAG") {
-      //console.log(cartesian);
+      var mesh = new THREE.Mesh(geometry, this.material);
+      this.outputs.objectRoot = mesh;
+      this.outputs.collider = mesh;
+    };
+    this.onEvent = function (eventType: string) {
       if (eventType == "INTERACTION.DRAG") {
         var cartesian = getCursorPosition();
-        //console.log(cartesian);
-        wall.obj3D.position.set(cartesian[0], 0, 5.2);
+        spawnNode.obj3D.position.set(cartesian[0], .1, cartesian[2]);
+        spawnerPosition = cartesian;
       }
-    }
-  };
+    };
 
-  fella.onEvent = function (eventType: string) {
-    //drag events (ha)
-    if (eventType == "INTERACTION.DRAG") {
-      //console.log(cartesian);
+    this.onTick = function (tickDelta) {};
+
+  }
+
+  function spawnFactory() {
+    return new Spawner();
+  }
+  sdk.Scene.register("spawn", spawnFactory);
+
+  const spawnNode = await sdk.Scene.createNode();
+
+  const spawner = spawnNode.addComponent("spawn");
+
+  //Gotta do this in order to make the events usable.
+  spawner.events["INTERACTION.HOVER"] = true;
+  spawner.events["INTERACTION.DRAG"] = true;
+  spawner.events["INTERACTION.CLICK"] = true;
+
+  //The position is controlled from the node. This is a little odd, which is why
+  spawnNode.obj3D.position.set(-5, .1, 5.5)
+  spawner.inputs.opacity = 1;
+  spawnNode.start();
+  //end of spawner definition
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //This was the method for creating multiple instances of the same object. THe end goal was to have a palette of objects to choose from
+  //Possibly link the palette the 3D library online
+  var rackArray = [];
+  var rackNodeArray = [];
+  var rackIndex = 0;
+  var rackSelected = 0;
+  var pastRackSelection = 0;
+
+//New object button
+  document.getElementById("clickMe6").onclick = async function newRack() {
+
+    //Create new node. Because each node has obj3D.position so we need a new node for each
+    rackNodeArray[rackIndex] = await sdk.Scene.createNode();
+
+    //Load the rack and link it to the node
+    rackArray[rackIndex] = rackNodeArray[rackIndex].addComponent(sdk.Scene.Component.FBX_LOADER, {
+      url: "./fbx/Telecom/Telecom.fbx",
+    });
+
+    //This is the scale necessary for this specific fbx model. THis required tuning that was a bit of a hassle to do
+    //I loaded the object into the model with the scale of 1, then measured a side. I used this as the scale factor using the true measurement
+    rackArray[rackIndex].inputs.localScale = {
+      x: 0.022,
+      y: 0.022,
+      z: 0.022,
+    };
+
+    //This spawns the object at the spawner
+    rackNodeArray[rackIndex].obj3D.position.set(spawnerPosition[0], 0, spawnerPosition[2]);
+    rackArray[rackIndex].events["INTERACTION.HOVER"] = true;
+    rackArray[rackIndex].events["INTERACTION.DRAG"] = true;
+    rackArray[rackIndex].events["INTERACTION.CLICK"] = true;
+
+    //The name is the method I used to determine which rack was selected
+    rackArray[rackIndex].name = rackIndex;
+    console.log(rackNodeArray[rackIndex]);
+    console.log(rackArray[rackIndex]);
+
+    //Here are the events. Events are loaded into the component, not the node
+    rackArray[rackIndex].onEvent = function (eventType: string) {
+
+      //Clicking the rack will select the rack
+      if (eventType == "INTERACTION.CLICK") {
+        pastRackSelection = rackSelected;
+        console.log(pastRackSelection);
+        rackSelected = this.name;
+        console.log(rackSelected)
+      }
+
+      //I also select the rack if the user drags it. The selection will come in handy if a toolbox is developed
       if (eventType == "INTERACTION.DRAG") {
+        pastRackSelection = rackSelected;
+        rackSelected = this.name;
+
         var cartesian = getCursorPosition();
-        //console.log(cartesian);
-        littleGuy.obj3D.position.set(cartesian[0], 0.75, cartesian[2]);
+
+        //This is was the method to determine which face the user is clicking. cartesian[3], cartesian[4], and cartesian[5] are the normal positions for x, y, and z respectively
+        //If the face in the x or -x direction is clicked, only move in the +/- z direction
+        if(cartesian[3] == 1 || cartesian[3] ==  -1)
+        {
+          rackNodeArray[rackSelected].obj3D.position.z = cartesian[2];
+
+        }
+
+        //If the face in the y direction (only the top from dollhouse view) is clicked, it can move in the x-z plane
+        if(cartesian[4] == 1)
+        {
+          rackNodeArray[rackSelected].obj3D.position.set(cartesian[0], 0, cartesian[2])
+        }
+
+        //If the face in the z or -z direction is clicked, only move in the +/- x direction
+        if(cartesian[5] == 1 || cartesian[5] ==  -1)
+        {
+          rackNodeArray[rackSelected].obj3D.position.x = cartesian[0];
+        }
+       }
+
+      //Attempt at one of the new events
+      if (eventType == "INTERACTION.SCROLL") {
+        console.log("scrollin scrollin scrollin")
       }
-    }
-  };
 
-  fanster.onEvent = function (eventType: string) {
-    //drag events (ha)
-    if (eventType == "INTERACTION.DRAG") {
-      //console.log(cartesian);
-      if (eventType == "INTERACTION.DRAG") {
-        var cartesian = getCursorPosition();
-        //console.log(cartesian);
-        fan.obj3D.position.set(-10.6, 0, cartesian[2]);
-      }
-    }
-  };
+    };
 
-  fbxComponent.onEvent = function (eventType: string) {
-    // console.log(eventType + " count: " + hoverCount);
+    //Start it and increment the index
+    rackNodeArray[rackIndex].start();
+    rackIndex++;
 
-    //click events
-    /*if ((this.eventType = "INTERACTION.CLICK" && clickCount % 2 == 0)) {
-      clickCount++;
-      console.log("Clickable component was clicked!" + clickCount);
-      this.material.color = new THREE.Color("royalblue");
-    } else if (
-      (this.eventType = "INTERACTION.CLICK" && clickCount % 2 != 0)
-    ) {
-      clickCount++;
-      console.log("Clickable component was clicked!" + clickCount);
-      this.material.color = new THREE.Color("white");
-    }*/
+  }
 
-    //hover events
-    if (eventType == "INTERACTION.HOVER" && hoverCountPlant % 2 == 0) {
-      /* console.log("yerp");
-      fbxComponent.inputs.localScale = {
-        x: 0.022 * 1.1,
-        y: 0.022 * 1.1,
-        z: 0.022 * 1.1,
-      };*/
-      hoverCountPlant++;
-    } else if (eventType == "INTERACTION.HOVER" && hoverCountPlant % 2 != 0) {
-      //this.material.color = new THREE.Color("royalblue");
-      /* console.log("yerp1");
-      fbxComponent.inputs.localScale = {
-        x: 0.022 / 1.1,
-        y: 0.022 / 1.1,
-        z: 0.022 / 1.1,
-      };*/
-      hoverCountPlant++;
-    }
+//Delete the selected rack
+  document.getElementById("clickMe7").onclick = async function deleteRack() {
 
-    //drag events (ha)
-    if (eventType == "INTERACTION.DRAG") {
-      //console.log(cartesian);
-      if (eventType == "INTERACTION.DRAG") {
-        var cartesian = getCursorPosition();
-        //console.log(cartesian);
-        modelNode.obj3D.position.set(cartesian[0], 0, cartesian[2]);
-      }
-    }
-  };
+    //Stop the node
+    rackNodeArray[rackSelected].stop();
 
-  //Location of the plant. X is "left and right", Y is "up and down", Z is "Forward and back"
-  // Relative to "spawn" location of the viewer. If you move those relations will not hold
-  littleGuy.obj3D.position.set(-1.135, 0.763, 0.777);
-  modelNode.obj3D.position.set(-7, 0, 7);
-  modelNode.obj3D.rotation.y = (90 * Math.PI) / 180;
-  wall.obj3D.position.set(-2.559, 0, 5.2);
-  fan.obj3D.position.set(-10.6, 0, 4.097);
-  fan.obj3D.rotation.y = (90 * Math.PI) / 180;
-  littleGuy.obj3D.rotation.y = (180 * Math.PI) / 180;
-  voltageNode.obj3D.position.set(-2.559, 0, 5.2)
-  cboNode.obj3D.position.set(-3, 0, 5.2)
-  //test.obj3D.position.set(-6.5, 0.5, 1.21);
+    //I do not want to pop/slice the deleted rack cuz then our indices are off. So I replace them with null placeholders
+    rackNodeArray[rackSelected] = null
+    rackArray[rackSelected] = null
+  }
 
-  sdk.Pointer.intersection.subscribe(function (intersectionData) {
-    // Changes to the intersection data have occurred.
-    document.getElementById("demo").innerHTML =
-        "X position : " +
-        Number.parseFloat(intersectionData.position.x).toFixed(3) +
-        " m" +
-        "<br/>" +
-        "Y position : " +
-        Number.parseFloat(intersectionData.position.y).toFixed(3) +
-        " m" +
-        "<br/>" +
-        "Z position : " +
-        Number.parseFloat(intersectionData.position.z).toFixed(3) +
-        " m";
-  });
-
-
-  document.getElementById("clickMe").onclick = function changeColor() {
-    console.log("color change")
-    bull.inputs.color = "green";
+  //Rotate the selected rack. When there are more than just racks, a directory should be used to determine which object is selected
+  //I was thinking a naming system that would be a array of ["object string", integer name]. Then only one rotate button would be necessary
+  //Instead of a bunch of buttons for each type of object.
+  document.getElementById("clickMe8").onclick = async function rotateRack() {
+    //It may be better to use a slider, because sometimes the layout is not always square to the object faces. This will help with the feng shui
+   rackNodeArray[rackSelected].obj3D.rotation.y += Math.PI/2;
   }
 
 
-  //Rot is for the ultra-impressive cosine rotation
-  //the .start() is what will actually add the object inside the node to scene
-
-  //  var rot = 0;
-  modelNode.start();
-  littleGuy.start();
-  fan.start();
-  wall.start();
-  voltageNode.start();
-  cboNode.start();
-  //test.start();
-
-  /* sdk.Mattertag.add([{
-     label: "New tag",
-     description: "This tag was added through the Matterport SDK",
-     anchorPosition : {
-       x: 0,
-       y: 0,
-       z: 0,
-     },
-     stemVector: { // make the Mattertag stick straight up and make it 0.30 meters (~1 foot) tall
-       x: 0,
-       y: 0.30,
-       z: 0,
-     },
-     color: { // blue disc
-       r: 0.0,
-       g: 0.0,
-       b: 1.0,
-     },
-     //floorId?: number, // optional, if not specified the sdk will provide an estimate of the floor id for the anchor position provided.
-   }])
- */
-
-  //This runs constantly to allow for animation. I am still unfamiliar with this
-  //It is called recursively though, so I think anything after this will not be reached
-  // The above is FALSE, it will read past this function. But I think it is still recursive because
-  //If a console.log() statement is put inside it is logged hundreds of times
-
-  //console.log(bull.events["INTERACTION.CLICK"]);
-
-  bull.events["INTERACTION.CLICK"] = true;
-  bull.events["INTERACTION.HOVER"] = true;
-  bull.events["INTERACTION.DRAG"] = true;
-
-  fbxComponent.events["INTERACTION.HOVER"] = true;
-  fbxComponent.events["INTERACTION.DRAG"] = true;
-
-  fanster.events["INTERACTION.HOVER"] = true;
-  fanster.events["INTERACTION.DRAG"] = true;
-
-  fella.events["INTERACTION.HOVER"] = true;
-  fella.events["INTERACTION.DRAG"] = true;
-
-  powerWall.events["INTERACTION.HOVER"] = true;
-  powerWall.events["INTERACTION.DRAG"] = true;
-
-  voltage.events["INTERACTION.HOVER"] = true;
-  voltage.events["INTERACTION.DRAG"] = true;
+  //This is a poor patch for the bug with the spawner. For some reason when the user first clicks the spawner it disapears, but after this button is clicked, it's all good.
+  //I do not know why this happens
+  document.getElementById("clickMe9").onclick = async function find() {
+    spawnNode.obj3D.position.set(-5, .1, 5.5)
+  }
 
 
-  cbo.events["INTERACTION.HOVER"] = true;
-  cbo.events["INTERACTION.DRAG"] = true;
+  //This is the save button. It will automatically download the "Scene.json" file
+  document.getElementById("clickMe10").onclick = async function save() {
+    //Gotta give it the nodes
+    var scene = await sdk.Scene.serialize(rackNodeArray)
+
+    //Now save the sucker
+    var file = new File([scene], "Scene.json", {type: "text/plain;charset=utf-8"});
+    FileSaver.saveAs(file);
+  }
+
+  //This is the load button
+  var file = null;
+  var nodes = [];
+  var reader =  new FileReader()
+  const fileSelector = document.getElementById('clickMe11');
+  fileSelector.addEventListener('change', async (event) => {
+        //I had to cheat. I don't know why but I need this event.target.files, and it'll give me errors if I dont ts-ignor it
+        // @ts-ignore
+        const fileList = event.target.files;
+
+        //I had to take this from the internet. I don't know what's going on in the background.
+        reader.onload = async function () {
+          file = reader.result;
+          console.log(file);
+          nodes = await sdk.Scene.deserialize(file);
+          console.log(nodes);
+
+          var i = 0;
+          for (i = 0; i < nodes.length; i++) {
+
+            //I name the nodes, which is sort of pointless right now
+            //Because this deserialize method is just the nodes, it seems like I do not have access to the
+            //Component. If I could access the component, it would be easy to load the racks and we'd be good to go
+            //Because of I'm not accessing the components, I can't change/create the onEvent function, so all the
+            //racks are stuck
+            nodes[i].name = i;
+            nodes[i].start();
+            console.log(nodes[i]);
+            console.log(rackSelected);
+          }
 
 
+        }
+
+        reader.readAsText(fileList[0]);
+      }
+  );
+
+  console.log(sdk)
+
+  //This is the sort of animation dealio. Gotta do it, not sure why
   const tick = function () {
     requestAnimationFrame(tick);
     //fan.obj3D.rotation.y = rot;
     // rot = rot + 0.02
-  bull.update();
+  //bull.update();
+  //updateSelection();
   };
+
+  //Looks recursive idk
   tick();
 });

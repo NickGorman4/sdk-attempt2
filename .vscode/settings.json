@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/ef74c932-a6bc-4e9e-aca8-d91d2710dce1/resourceGroups/tnd-matterport-prod/providers/Microsoft.Web/sites/tnd-matterport-webapp-prod",
+    "appService.deploySubpath": "."
+}
